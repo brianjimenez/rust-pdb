@@ -3,17 +3,21 @@ use std::fs::File;
 
 #[derive(Debug)]
 pub struct Atom {
+    pub name: String,
+    pub number: u32,
     pub x: f32,
     pub y: f32,
     pub z: f32,
 }
 
 impl Atom {
-    fn new(x: f32, y: f32, z: f32) -> Atom {
+    fn new(name: String, number: u32, x: f32, y: f32, z: f32) -> Atom {
         Atom {
-            x: x,
-            y: y,
-            z: z,
+            name,
+            number,
+            x,
+            y,
+            z,
         }
     }
 }
@@ -31,7 +35,15 @@ impl PDBIO {
         for line in BufReader::new(file).lines() {
             let line = line.unwrap();
             if line.starts_with("ATOM  ") {
-
+                let name = line[12..16].trim().to_string();
+                let atom_number = line[6..11].trim().parse::<u32>();
+                let atom_number = match atom_number {
+                    Ok(atom_number) => atom_number,
+                    Err(e) => {
+                        println!("Can not parse atom number ({})", e);
+                        0
+                    }
+                };
                 let x_coord = line[30..39].trim().parse::<f32>();
                 let x = match x_coord {
                     Ok(x) => x,
@@ -57,7 +69,7 @@ impl PDBIO {
                     }
                 };
 
-                atoms.push(Atom::new(x, y, z));
+                atoms.push(Atom::new(name, atom_number, x, y, z));
             }
         }
         atoms
