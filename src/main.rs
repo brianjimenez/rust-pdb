@@ -2,7 +2,7 @@ extern crate pdb;
 
 use std::env;
 use pdb::PDBIO;
-use pdb::Atom;
+use pdb::Residue;
 
 
 fn main() {
@@ -12,8 +12,10 @@ fn main() {
 
     println!("PDB file {}", filename);
 
-    let atoms : Vec<Atom> = PDBIO::parse(filename);
+    let residues : Vec<Residue> = PDBIO::parse(filename);
 
-    println!("{:?}", &atoms[0]);
+    println!("{}.{}", residues[0].name, residues[0].number);
+    let atom = &residues[0].atoms[0];
+    println!("{:?}", atom);
 }
 

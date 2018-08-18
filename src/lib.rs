@@ -44,7 +44,15 @@ impl Residue {
     }
 }
 
-
+impl Default for Residue {
+    fn default() -> Residue {
+        Residue {
+            name: "".to_string(),
+            number: 0,
+            atoms: Vec::new(),
+        }
+    }
+}
 
 
 pub struct PDBIO {
@@ -52,9 +60,10 @@ pub struct PDBIO {
 }
 
 impl PDBIO {
-    pub fn parse(filename: &String) -> Vec<Atom> {
+    pub fn parse(filename: &String) -> Vec<Residue> {
         let mut atoms: Vec<Atom> = Vec::new();
         let mut residues: Vec<Residue> = Vec::new();
+        let mut current_residue : Residue = Default::default();
 
         let file = File::open(filename).unwrap();
         for line in BufReader::new(file).lines() {
@@ -107,7 +116,6 @@ impl PDBIO {
                     }
                 };
                 // B-factor
-                // Occupancy
                 let bfactor = line[60..66].trim().parse::<f32>();
                 let bfactor = match bfactor {
                     Ok(bfactor) => bfactor,
@@ -116,9 +124,31 @@ impl PDBIO {
                     }
                 };
 
-                atoms.push(Atom::new(name, atom_number, x, y, z, occ, bfactor));
+                // Residue
+                let residue_name = line[17..20].trim().to_string();
+                // Residue number
+                let residue_number = line[22..26].trim().parse::<u32>();
+                let residue_number = match residue_number {
+                    Ok(residue_number) => residue_number,
+                    Err(e) => {
+                        println!("Can not parse residue number ({})", e);
+                        0
+                    }
+                };
+                if current_residue.name == "" && current_residue.number == 0 {
+                    current_residue.name = residue_name.clone();
+                    current_residue.number = residue_number.clone();
+                }
+                if current_residue.name == residue_name && current_residue.number == residue_number {
+                    current_residue.atoms.push(Atom::new(name, atom_number, x, y, z, occ, bfactor));
+                }
+                else {
+                    residues.push(current_residue);
+                    current_residue = Residue::new(residue_name, residue_number, Vec::new());
+                    current_residue.atoms.push(Atom::new(name, atom_number, x, y, z, occ, bfactor));
+                }
             }
         }
-        atoms
+        residues
     }
 }
