@@ -55,15 +55,41 @@ impl Default for Residue {
 }
 
 
+#[derive(Debug)]
+pub struct Chain {
+    pub id: String,
+    pub residues: Vec<Residue>,
+}
+
+impl Chain {
+    fn new(id: String, residues: Vec<Residue>) -> Chain {
+        Chain {
+            id,
+            residues,
+        }
+    }
+}
+
+impl Default for Chain {
+    fn default() -> Chain {
+        Chain {
+            id: "".to_string(),
+            residues: Vec::new(),
+        }
+    }
+}
+
+
 pub struct PDBIO {
     pub filename: String,
 }
 
 impl PDBIO {
-    pub fn parse(filename: &String) -> Vec<Residue> {
-        let mut atoms: Vec<Atom> = Vec::new();
-        let mut residues: Vec<Residue> = Vec::new();
+    pub fn parse(filename: &String) -> Vec<Chain> {
+        let mut chains: Vec<Chain> = Vec::new();
+
         let mut current_residue : Residue = Default::default();
+        let mut current_chain : Chain = Default::default();
 
         let file = File::open(filename).unwrap();
         for line in BufReader::new(file).lines() {
@@ -123,7 +149,6 @@ impl PDBIO {
                         0.0
                     }
                 };
-
                 // Residue
                 let residue_name = line[17..20].trim().to_string();
                 // Residue number
@@ -135,6 +160,10 @@ impl PDBIO {
                         0
                     }
                 };
+                // Chain id
+                let chain_id = line[21..22].trim().to_string().to_uppercase();
+                
+                // Residue logic
                 if current_residue.name == "" && current_residue.number == 0 {
                     current_residue.name = residue_name.clone();
                     current_residue.number = residue_number.clone();
@@ -143,12 +172,22 @@ impl PDBIO {
                     current_residue.atoms.push(Atom::new(name, atom_number, x, y, z, occ, bfactor));
                 }
                 else {
-                    residues.push(current_residue);
+                    current_chain.residues.push(current_residue);
                     current_residue = Residue::new(residue_name, residue_number, Vec::new());
                     current_residue.atoms.push(Atom::new(name, atom_number, x, y, z, occ, bfactor));
                 }
+
+                // Chain logic
+                if current_chain.id == "" {
+                    current_chain.id = chain_id.clone();
+                }
+                if chain_id != current_chain.id {
+                    chains.push(current_chain);
+                    current_chain = Chain::new(chain_id, Vec::new());
+                }
             }
         }
-        residues
+        chains.push(current_chain);
+        chains
     }
 }
