@@ -2,7 +2,7 @@ extern crate pdb;
 
 use std::env;
 use pdb::PDBIO;
-use pdb::{Chain,Residue};
+use pdb::chain::Chain;
 
 
 fn main() {

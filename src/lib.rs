@@ -1,83 +1,11 @@
+pub mod atom;
+pub mod residue;
+pub mod chain;
 use std::io::{BufReader,BufRead};
 use std::fs::File;
-
-#[derive(Debug)]
-pub struct Atom {
-    pub name: String,
-    pub number: u32,
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
-    pub occupancy: f32,
-    pub bfactor: f32,
-}
-
-impl Atom {
-    fn new(name: String, number: u32, x: f32, y: f32, z: f32, occupancy: f32, bfactor: f32) -> Atom {
-        Atom {
-            name,
-            number,
-            x,
-            y,
-            z,
-            occupancy,
-            bfactor,
-        }
-    }
-}
-
-
-#[derive(Debug)]
-pub struct Residue {
-    pub name: String,
-    pub number: u32,
-    pub atoms: Vec<Atom>,
-}
-
-impl Residue {
-    fn new(name: String, number: u32, atoms: Vec<Atom>) -> Residue {
-        Residue {
-            name,
-            number,
-            atoms,
-        }
-    }
-}
-
-impl Default for Residue {
-    fn default() -> Residue {
-        Residue {
-            name: "".to_string(),
-            number: 0,
-            atoms: Vec::new(),
-        }
-    }
-}
-
-
-#[derive(Debug)]
-pub struct Chain {
-    pub id: String,
-    pub residues: Vec<Residue>,
-}
-
-impl Chain {
-    fn new(id: String, residues: Vec<Residue>) -> Chain {
-        Chain {
-            id,
-            residues,
-        }
-    }
-}
-
-impl Default for Chain {
-    fn default() -> Chain {
-        Chain {
-            id: "".to_string(),
-            residues: Vec::new(),
-        }
-    }
-}
+use atom::Atom;
+use residue::Residue;
+use chain::Chain;
 
 
 pub struct PDBIO {
