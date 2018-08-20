@@ -1,11 +1,13 @@
 pub mod atom;
 pub mod residue;
 pub mod chain;
+pub mod model;
 use std::io::{BufReader,BufRead};
 use std::fs::File;
 use atom::Atom;
 use residue::Residue;
 use chain::Chain;
+use model::Model;
 
 
 pub struct PDBIO {
@@ -13,11 +15,12 @@ pub struct PDBIO {
 }
 
 impl PDBIO {
-    pub fn parse(filename: &String) -> Vec<Chain> {
-        let mut chains: Vec<Chain> = Vec::new();
+    pub fn parse(filename: &String) -> Vec<Model> {
+        let mut models: Vec<Model> = Vec::new();
 
         let mut current_residue : Residue = Default::default();
         let mut current_chain : Chain = Default::default();
+        let mut current_model : Model = Default::default();
 
         let file = File::open(filename).unwrap();
         for line in BufReader::new(file).lines() {
@@ -110,12 +113,28 @@ impl PDBIO {
                     current_chain.id = chain_id.clone();
                 }
                 if chain_id != current_chain.id {
-                    chains.push(current_chain);
+                    current_model.chains.push(current_chain);
                     current_chain = Chain::new(chain_id, Vec::new());
                 }
             }
+            if line.starts_with("MODEL ") {
+                // Model number
+                let model_number = line[5..26].trim().parse::<u32>();
+                let model_number = match model_number {
+                    Ok(model_number) => model_number,
+                    Err(e) => {
+                        println!("Can not parse model number ({})", e);
+                        1
+                    }
+                };
+                if current_model.id != model_number {
+                    models.push(current_model);
+                    current_model = Model::new(model_number, Vec::new());
+                }
+            }
         }
-        chains.push(current_chain);
-        chains
+        current_model.chains.push(current_chain);
+        models.push(current_model);
+        models
     }
 }

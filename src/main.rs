@@ -2,7 +2,7 @@ extern crate pdb;
 
 use std::env;
 use pdb::PDBIO;
-use pdb::chain::Chain;
+use pdb::model::Model;
 
 
 fn main() {
@@ -12,11 +12,12 @@ fn main() {
 
     println!("Parsing PDB file {}", filename);
 
-    let chains : Vec<Chain> = PDBIO::parse(filename);
-
-    println!("{} chains found", chains.len());
-    for chain in chains {
-        println!("{}: {}", chain.id, chain.residues.len());
+    let models : Vec<Model> = PDBIO::parse(filename);
+    for model in models.iter() {
+        println!("Model {} - {} chains found", model.id, model.chains.len());
+        for chain in model.chains.iter() {
+            println!("{}: {}", chain.id, chain.residues.len());
+        }
     }
 }
 
