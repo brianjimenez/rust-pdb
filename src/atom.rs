@@ -1,4 +1,4 @@
-
+use std::ops;
 
 #[derive(Debug)]
 pub struct Atom {
@@ -22,5 +22,28 @@ impl Atom {
             occupancy,
             bfactor,
         }
+    }
+}
+
+impl ops::Sub for Atom {
+    type Output = f32;
+
+    fn sub(self, other: Atom) -> f32 {
+        (
+            (self.x - other.x)*(self.x - other.x) + 
+            (self.y - other.y)*(self.y - other.y) + 
+            (self.z - other.z)*(self.z - other.z)
+        ).sqrt()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn atom_distance() {
+        let a1 = Atom::new("H".to_string(), 1, 2.0, 2.0, 2.0, 0.0, 0.0);
+        let a2 = Atom::new("H".to_string(), 2, 0.0, 2.0, 2.0, 0.0, 0.0);
+        assert_eq!(a1 - a2, 2.0);
     }
 }
