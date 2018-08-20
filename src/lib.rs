@@ -2,12 +2,14 @@ pub mod atom;
 pub mod residue;
 pub mod chain;
 pub mod model;
+pub mod structure;
 use std::io::{BufReader,BufRead};
 use std::fs::File;
 use atom::Atom;
 use residue::Residue;
 use chain::Chain;
 use model::Model;
+use structure::Structure;
 
 
 pub struct PDBIO {
@@ -15,9 +17,8 @@ pub struct PDBIO {
 }
 
 impl PDBIO {
-    pub fn parse(filename: &String) -> Vec<Model> {
-        let mut models: Vec<Model> = Vec::new();
-
+    pub fn parse(filename: &String) -> Structure {
+        let mut structure: Structure = Default::default();
         let mut current_residue : Residue = Default::default();
         let mut current_chain : Chain = Default::default();
         let mut current_model : Model = Default::default();
@@ -128,13 +129,13 @@ impl PDBIO {
                     }
                 };
                 if current_model.id != model_number {
-                    models.push(current_model);
+                    structure.models.push(current_model);
                     current_model = Model::new(model_number, Vec::new());
                 }
             }
         }
         current_model.chains.push(current_chain);
-        models.push(current_model);
-        models
+        structure.models.push(current_model);
+        structure
     }
 }
