@@ -16,6 +16,30 @@ pub struct PDBIO {
     pub filename: String,
 }
 
+fn parse_u32(number : &String) -> u32 {
+    let number = number.trim().parse::<u32>();
+    let number = match number {
+        Ok(number) => number,
+        Err(e) => {
+            println!("Can not parse ({})", e);
+            0
+        }
+    };
+    number
+}
+
+fn parse_f32(number : &String) -> f32 {
+    let number = number.trim().parse::<f32>();
+    let number = match number {
+        Ok(number) => number,
+        Err(e) => {
+            println!("Can not parse ({})", e);
+            0.0
+        }
+    };
+    number
+}
+
 impl PDBIO {
     pub fn parse(filename: &String) -> Structure {
         let mut structure: Structure = Default::default();
@@ -30,68 +54,29 @@ impl PDBIO {
                 // Atom name
                 let name = line[12..16].trim().to_string();
                 // Atom number
-                let atom_number = line[6..11].trim().parse::<u32>();
-                let atom_number = match atom_number {
-                    Ok(atom_number) => atom_number,
-                    Err(e) => {
-                        println!("Can not parse atom number ({})", e);
-                        0
-                    }
-                };
+                let atom_number = parse_u32(&line[6..11].to_string());
+                
                 // Coord X
-                let x_coord = line[30..39].trim().parse::<f32>();
-                let x = match x_coord {
-                    Ok(x) => x,
-                    Err(e) => {
-                        println!("Can not parse x coordinate ({})", e);
-                        0.0
-                    }
-                };
+                let x = parse_f32(&line[30..39].to_string());
+                
                 // Coord Y
-                let y_coord = line[38..47].trim().parse::<f32>();
-                let y = match y_coord {
-                    Ok(y) => y,
-                    Err(e) => {
-                        println!("Can not parse y coordinate ({})", e);
-                        0.0
-                    }
-                };
+                let y = parse_f32(&line[38..47].to_string());
+
                 // Coord Z
-                let z_coord = line[46..55].trim().parse::<f32>();
-                let z = match z_coord {
-                    Ok(z) => z,
-                    Err(e) => {
-                        println!("Can not parse z coordinate ({})", e);
-                        0.0
-                    }
-                };
+                let z = parse_f32(&line[46..55].to_string());
+                
                 // Occupancy
-                let occ = line[54..60].trim().parse::<f32>();
-                let occ = match occ {
-                    Ok(occ) => occ,
-                    Err(e) => {
-                        0.0
-                    }
-                };
+                let occ = parse_f32(&line[54..60].to_string());
+                
                 // B-factor
-                let bfactor = line[60..66].trim().parse::<f32>();
-                let bfactor = match bfactor {
-                    Ok(bfactor) => bfactor,
-                    Err(e) => {
-                        0.0
-                    }
-                };
-                // Residue
+                let bfactor = parse_f32(&line[60..66].to_string());
+
+                // Residue name
                 let residue_name = line[17..20].trim().to_string();
+                
                 // Residue number
-                let residue_number = line[22..26].trim().parse::<u32>();
-                let residue_number = match residue_number {
-                    Ok(residue_number) => residue_number,
-                    Err(e) => {
-                        println!("Can not parse residue number ({})", e);
-                        0
-                    }
-                };
+                let residue_number = parse_u32(&line[22..26].to_string());
+                
                 // Chain id
                 let chain_id = line[21..22].trim().to_string().to_uppercase();
                 
