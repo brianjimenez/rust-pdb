@@ -9,10 +9,12 @@ pub struct Atom {
     pub z: f32,
     pub occupancy: f32,
     pub bfactor: f32,
+    pub hetatom: bool,
 }
 
 impl Atom {
-    pub fn new(name: String, number: u32, x: f32, y: f32, z: f32, occupancy: f32, bfactor: f32) -> Atom {
+    pub fn new(name: String, number: u32, x: f32, y: f32, z: f32, 
+        occupancy: f32, bfactor: f32, hetatom: bool) -> Atom {
         Atom {
             name,
             number,
@@ -21,6 +23,7 @@ impl Atom {
             z,
             occupancy,
             bfactor,
+            hetatom
         }
     }
 }
@@ -37,13 +40,14 @@ impl ops::Sub for Atom {
     }
 }
 
+
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn atom_distance() {
-        let a1 = Atom::new("H".to_string(), 1, 2.0, 2.0, 2.0, 0.0, 0.0);
-        let a2 = Atom::new("H".to_string(), 2, 0.0, 2.0, 2.0, 0.0, 0.0);
+        let a1 = Atom::new("H".to_string(), 1, 2.0, 2.0, 2.0, 0.0, 0.0, false);
+        let a2 = Atom::new("H".to_string(), 2, 0.0, 2.0, 2.0, 0.0, 0.0, false);
         assert_eq!(a1 - a2, 2.0);
     }
 }

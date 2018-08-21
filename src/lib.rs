@@ -50,7 +50,7 @@ impl PDBIO {
         let file = File::open(filename).unwrap();
         for line in BufReader::new(file).lines() {
             let line = line.unwrap();
-            if line.starts_with("ATOM  ") {
+            if line.starts_with("ATOM  ") || line.starts_with("HETATM") {
                 // Atom name
                 let name = line[12..16].trim().to_string();
                 // Atom number
@@ -80,18 +80,21 @@ impl PDBIO {
                 // Chain id
                 let chain_id = line[21..22].trim().to_string().to_uppercase();
                 
+                // Atom type
+                let is_hetatom = line.starts_with("HETATM");
+
                 // Residue logic
                 if current_residue.name == "" && current_residue.number == 0 {
                     current_residue.name = residue_name.clone();
                     current_residue.number = residue_number.clone();
                 }
                 if current_residue.name == residue_name && current_residue.number == residue_number {
-                    current_residue.atoms.push(Atom::new(name, atom_number, x, y, z, occ, bfactor));
+                    current_residue.atoms.push(Atom::new(name, atom_number, x, y, z, occ, bfactor, is_hetatom));
                 }
                 else {
                     current_chain.residues.push(current_residue);
                     current_residue = Residue::new(residue_name, residue_number, Vec::new());
-                    current_residue.atoms.push(Atom::new(name, atom_number, x, y, z, occ, bfactor));
+                    current_residue.atoms.push(Atom::new(name, atom_number, x, y, z, occ, bfactor, is_hetatom));
                 }
 
                 // Chain logic
