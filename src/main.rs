@@ -16,7 +16,13 @@ fn main() {
     for model in protein.models.iter() {
         println!("Model {} - {} chains found", model.id, model.chains.len());
         for chain in model.chains.iter() {
-            println!("{}: {}", chain.id, chain.residues.len());
+            if chain.id == "I" {
+                println!("{}: {}", chain.id, chain.residues.len());
+                for residue in chain.residues.iter() {
+                    println!("{}.{}", residue.name, residue.number);
+                    println!("{:?}", residue);
+                }
+            }
         }
     }
 }

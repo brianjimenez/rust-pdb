@@ -134,6 +134,7 @@ impl PDBIO {
                 }
             }
         }
+        current_chain.residues.push(current_residue);
         current_model.chains.push(current_chain);
         structure.models.push(current_model);
         structure
