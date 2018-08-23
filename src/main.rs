@@ -15,13 +15,11 @@ fn main() {
     let protein : Structure = PDBIO::parse(filename);
     for model in protein.models.iter() {
         println!("Model {} - {} chains found", model.id, model.chains.len());
-        for chain in model.chains.iter() {
-            if chain.id == "I" {
-                println!("{}: {}", chain.id, chain.residues.len());
-                for residue in chain.residues.iter() {
-                    println!("{}.{}", residue.name, residue.number);
-                    println!("{:?}", residue);
-                }
+        for (_chain_id, chain) in &model.chains {
+            println!("{}: {}", chain.id, chain.residues.len());
+            for residue in chain.residues.iter() {
+                println!("{}.{}", residue.name, residue.number);
+                //println!("{:?}", residue);
             }
         }
     }

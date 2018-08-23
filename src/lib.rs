@@ -5,6 +5,7 @@ pub mod model;
 pub mod structure;
 use std::io::{BufReader,BufRead};
 use std::fs::File;
+use std::collections::HashMap;
 use atom::Atom;
 use residue::Residue;
 use chain::Chain;
@@ -44,8 +45,8 @@ impl PDBIO {
     pub fn parse(filename: &String) -> Structure {
         let mut structure: Structure = Default::default();
         let mut current_residue : Residue = Default::default();
-        let mut current_chain : Chain = Default::default();
         let mut current_model : Model = Default::default();
+        let mut chain_id : String;
 
         let file = File::open(filename).unwrap();
         for line in BufReader::new(file).lines() {
@@ -78,11 +79,16 @@ impl PDBIO {
                 let residue_number = parse_u32(&line[22..26].to_string());
                 
                 // Chain id
-                let chain_id = line[21..22].trim().to_string().to_uppercase();
+                chain_id = line[21..22].trim().to_string().to_uppercase();
                 
                 // Atom type
                 let is_hetatom = line.starts_with("HETATM");
 
+                // Chain logic
+                if !current_model.chains.contains_key(&chain_id) {
+                    current_model.chains.insert(chain_id.clone(), Chain::new(chain_id.clone(), Vec::new()));
+                }
+                
                 // Residue logic
                 if current_residue.name == "" && current_residue.number == 0 {
                     current_residue.name = residue_name.clone();
@@ -92,38 +98,25 @@ impl PDBIO {
                     current_residue.atoms.push(Atom::new(name, atom_number, x, y, z, occ, bfactor, is_hetatom));
                 }
                 else {
-                    current_chain.residues.push(current_residue);
-                    current_residue = Residue::new(residue_name, residue_number, Vec::new());
-                    current_residue.atoms.push(Atom::new(name, atom_number, x, y, z, occ, bfactor, is_hetatom));
-                }
-
-                // Chain logic
-                if current_chain.id == "" {
-                    current_chain.id = chain_id.clone();
-                }
-                if chain_id != current_chain.id {
-                    current_model.chains.push(current_chain);
-                    current_chain = Chain::new(chain_id, Vec::new());
+                    match current_model.chains.get_mut(&chain_id) {
+                        Some(chain) => {
+                            chain.residues.push(current_residue);
+                            current_residue = Residue::new(residue_name, residue_number, Vec::new());
+                            current_residue.atoms.push(Atom::new(name, atom_number, x, y, z, occ, bfactor, is_hetatom));
+                        },
+                        None => println!("{} chain not found", chain_id)
+                    }
                 }
             }
+            // Model logic
             if line.starts_with("MODEL ") {
-                // Model number
-                let model_number = line[5..26].trim().parse::<u32>();
-                let model_number = match model_number {
-                    Ok(model_number) => model_number,
-                    Err(e) => {
-                        println!("Can not parse model number ({})", e);
-                        1
-                    }
-                };
+                let model_number = parse_u32(&line[5..26].to_string());
                 if current_model.id != model_number {
                     structure.models.push(current_model);
-                    current_model = Model::new(model_number, Vec::new());
+                    current_model = Model::new(model_number, HashMap::new());
                 }
             }
         }
-        current_chain.residues.push(current_residue);
-        current_model.chains.push(current_chain);
         structure.models.push(current_model);
         structure
     }
