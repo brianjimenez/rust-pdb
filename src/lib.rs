@@ -127,14 +127,9 @@ impl PDBIO {
         }
 
         // Final residue
-        if previous_chain_id != chain_id {
-            if let Some(chain) = current_model.chains.get_mut(&previous_chain_id) {
-                chain.residues.push(current_residue);
-            }
-        } else {
-            if let Some(chain) = current_model.chains.get_mut(&chain_id) {
-                chain.residues.push(current_residue);
-            }
+        let cid = if previous_chain_id != chain_id { previous_chain_id.clone() } else{ chain_id.clone() };
+        if let Some(chain) = current_model.chains.get_mut(&cid) {
+            chain.residues.push(current_residue);
         }
 
         structure.models.push(current_model);
