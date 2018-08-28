@@ -46,14 +46,15 @@ impl PDBIO {
         let mut structure: Structure = Default::default();
         let mut current_residue : Residue = Default::default();
         let mut current_model : Model = Default::default();
-        let mut chain_id : String;
+        let mut chain_id : String = String::from("");
+        let mut previous_chain_id : String = String::from("");
 
         let file = File::open(filename).unwrap();
         for line in BufReader::new(file).lines() {
             let line = line.unwrap();
             if line.starts_with("ATOM  ") || line.starts_with("HETATM") {
                 // Atom name
-                let name = line[12..16].trim().to_string();
+                let name = line[12..17].trim().to_string();
                 // Atom number
                 let atom_number = parse_u32(&line[6..11].to_string());
                 
@@ -80,34 +81,41 @@ impl PDBIO {
                 
                 // Chain id
                 chain_id = line[21..22].trim().to_string().to_uppercase();
-                
+
                 // Atom type
                 let is_hetatom = line.starts_with("HETATM");
+
+                //println!("{}.{}.{}", chain_id, residue_name, residue_number);
 
                 // Chain logic
                 if !current_model.chains.contains_key(&chain_id) {
                     current_model.chains.insert(chain_id.clone(), Chain::new(chain_id.clone(), Vec::new()));
                 }
                 
-                // Residue logic
-                if current_residue.name == "" && current_residue.number == 0 {
-                    current_residue.name = residue_name.clone();
-                    current_residue.number = residue_number.clone();
-                }
-                if current_residue.name == residue_name && current_residue.number == residue_number {
+                if current_residue.is_empty() {
+                    // First parsed residue
+                    current_residue = Residue::new(residue_name.clone(), residue_number.clone(), Vec::new());
+                    previous_chain_id = chain_id.clone();
+                } else if current_residue.name == residue_name && current_residue.number == residue_number {
+                    // Add atoms to the current residue
+                    current_residue.atoms.push(Atom::new(name, atom_number, x, y, z, occ, bfactor, is_hetatom));
+                } else {
+                    // Next residue
+                    if previous_chain_id != chain_id {
+                        if let Some(chain) = current_model.chains.get_mut(&previous_chain_id) {
+                            chain.residues.push(current_residue);
+                        }
+                        previous_chain_id = chain_id.clone();
+                    } else {
+                        if let Some(chain) = current_model.chains.get_mut(&chain_id) {
+                            chain.residues.push(current_residue);
+                        }
+                    }
+                    current_residue = Residue::new(residue_name, residue_number, Vec::new());
                     current_residue.atoms.push(Atom::new(name, atom_number, x, y, z, occ, bfactor, is_hetatom));
                 }
-                else {
-                    match current_model.chains.get_mut(&chain_id) {
-                        Some(chain) => {
-                            chain.residues.push(current_residue);
-                            current_residue = Residue::new(residue_name, residue_number, Vec::new());
-                            current_residue.atoms.push(Atom::new(name, atom_number, x, y, z, occ, bfactor, is_hetatom));
-                        },
-                        None => println!("{} chain not found", chain_id)
-                    }
-                }
             }
+
             // Model logic
             if line.starts_with("MODEL ") {
                 let model_number = parse_u32(&line[5..26].to_string());
@@ -117,6 +125,18 @@ impl PDBIO {
                 }
             }
         }
+
+        // Final residue
+        if previous_chain_id != chain_id {
+            if let Some(chain) = current_model.chains.get_mut(&previous_chain_id) {
+                chain.residues.push(current_residue);
+            }
+        } else {
+            if let Some(chain) = current_model.chains.get_mut(&chain_id) {
+                chain.residues.push(current_residue);
+            }
+        }
+
         structure.models.push(current_model);
         structure
     }

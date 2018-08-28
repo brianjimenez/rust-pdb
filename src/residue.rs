@@ -15,6 +15,10 @@ impl Residue {
             atoms,
         }
     }
+
+    pub fn is_empty(&self) -> bool {
+        (self.name == "" && self.number == 0)
+    }
 }
 
 impl Default for Residue {

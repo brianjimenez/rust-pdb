@@ -18,7 +18,7 @@ fn main() {
         for (_chain_id, chain) in &model.chains {
             println!("{}: {}", chain.id, chain.residues.len());
             for residue in chain.residues.iter() {
-                println!("{}.{}", residue.name, residue.number);
+                println!("{}.{}.{}", chain.id, residue.name, residue.number);
                 //println!("{:?}", residue);
             }
         }
