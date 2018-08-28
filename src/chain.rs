@@ -18,7 +18,7 @@ impl Chain {
 impl Default for Chain {
     fn default() -> Chain {
         Chain {
-            id: "".to_string(),
+            id: String::from(""),
             residues: Vec::new(),
         }
     }

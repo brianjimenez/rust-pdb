@@ -24,7 +24,7 @@ impl Residue {
 impl Default for Residue {
     fn default() -> Residue {
         Residue {
-            name: "".to_string(),
+            name: String::from(""),
             number: 0,
             atoms: Vec::new(),
         }

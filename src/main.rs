@@ -17,10 +17,10 @@ fn main() {
         println!("Model {} - {} chains found", model.id, model.chains.len());
         for (_chain_id, chain) in &model.chains {
             println!("{}: {}", chain.id, chain.residues.len());
-            for residue in chain.residues.iter() {
-                println!("{}.{}.{}", chain.id, residue.name, residue.number);
+            //for residue in chain.residues.iter() {
+            //    println!("{}.{}.{}", chain.id, residue.name, residue.number);
                 //println!("{:?}", residue);
-            }
+            //}
         }
     }
 }

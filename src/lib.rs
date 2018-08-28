@@ -85,8 +85,6 @@ impl PDBIO {
                 // Atom type
                 let is_hetatom = line.starts_with("HETATM");
 
-                //println!("{}.{}.{}", chain_id, residue_name, residue_number);
-
                 // Chain logic
                 if !current_model.chains.contains_key(&chain_id) {
                     current_model.chains.insert(chain_id.clone(), Chain::new(chain_id.clone(), Vec::new()));
